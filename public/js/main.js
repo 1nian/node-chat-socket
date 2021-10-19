@@ -2,10 +2,24 @@ const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 
 const socket = io();
-socket.on('message', message => {
-  console.log(message);
-  outputMessage(message);
 
+const user_data = Qs.parse(location.href.split('?')[1]);
+socket.emit('join', user_data);
+
+//加入
+socket.on('connection messgae', info => {
+  outputMessage(info);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+})
+
+//离开
+socket.on('disconnect messgae', info=>{
+  outputMessage(info);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+})
+
+socket.on('chatMessage', info => {
+  outputMessage(info);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 })
 
@@ -19,11 +33,11 @@ chatForm.addEventListener('submit', e => {
   e.target.elements.msg.value = '';
 })
 
-function outputMessage(message){
+function outputMessage(info){
   const div = document.createElement('div');
   div.classList.add('message');
-  div.innerHTML = `<p class="meta">Mary <span>9:15pm</span></p>
-  <p class="text">${message}</p>`;
+  div.innerHTML = `<p class="meta">${info.username} <span>${info.date}</span></p>
+  <p class="text">${info.msg}</p>`;
   chatMessages.appendChild(div);
 
 }

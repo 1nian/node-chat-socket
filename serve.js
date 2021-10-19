@@ -3,26 +3,27 @@ const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
 
+
 const PORT = 3001;
 const app = express();
 const serve = http.createServer(app);
 const io = socketio(serve);
 
+const message = require('./utils/messages.js')
+
 app.use(express.static(path.join(__dirname,'public')))
 
 io.on('connection', socket => {
-  console.log('Weclome');
-  socket.emit('messgae', 'Weclome');
-
-  socket.broadcast.emit('messgae', '用户加入');
-
-  socket.on('disconnect', () => {
-    io.emit('messgae', '用户离开')
+  socket.on('join', info => {
+    socket.broadcast.emit('connection messgae', message(info.username,'用户加入'));
   })
 
   socket.on('chatMessage', msg => {
-    console.log(msg);
-    io.emit('messgae', msg)
+    io.emit('chatMessage', message('username',msg))
+  })
+
+  socket.on('disconnect', () => {
+    io.emit('disconnect messgae', message('Admin','用户离开'))
   })
 })
 
